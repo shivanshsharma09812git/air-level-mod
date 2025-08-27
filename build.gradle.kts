@@ -1,8 +1,8 @@
 plugins {
-    id("fabric-loom") version "1.7-SNAPSHOT"
-    id("maven-publish")
-    java
+    id("fabric-loom") version "1.7.4"
+    id("java")
 }
+
 
 group = "com.example"
 version = "1.0.0"
@@ -22,9 +22,9 @@ dependencies {
 }
 
 tasks.jar {
-    archiveBaseName.set("air-cull")
-    archiveVersion.set(version.toString())
+    archiveBaseName.set("air-level-mod")
+    archiveVersion.set("1.0.0")
     from("LICENSE") {
-        rename { "LICENSE_${project.name}" }
+        rename { "${it}_${archiveBaseName.get()}" }
     }
 }
