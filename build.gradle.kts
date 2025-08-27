@@ -5,7 +5,7 @@ plugins {
 
 val minecraftVersion = "1.21.4"
 val loaderVersion = "0.16.10"
-val fabricApiVersion = "0.116.2+1.21.4"
+val fabricApiVersion = "0.111.0+1.21.4"
 
 group = "com.aircul"
 version = "1.0.0"
