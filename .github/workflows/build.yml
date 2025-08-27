@@ -1,8 +1,8 @@
-name: Build AirCull Mod (Gradle 8.10 direct)
+name: Build AirCull Mod (Gradle 8.10, Java 21)
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
 
 jobs:
@@ -21,7 +21,7 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Cache Gradle & dependencies
+      - name: Cache Gradle & Gradle wrapper downloads
         uses: actions/cache@v4
         with:
           path: |
@@ -31,36 +31,38 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Download Gradle ${GRADLE_VERSION}
+      - name: Download Gradle ${{ env.GRADLE_VERSION }}
         run: |
           set -eux
-          DISTZIP="gradle-${GRADLE_VERSION}-bin.zip"
-          TARGET_DIR=".gradle-dist/gradle-${GRADLE_VERSION}"
-          mkdir -p "$TARGET_DIR"
-          if [ ! -f "$TARGET_DIR/bin/gradle" ]; then
+          DISTZIP="gradle-${{ env.GRADLE_VERSION }}-bin.zip"
+          TARGET_DIR=".gradle-dist/gradle-${{ env.GRADLE_VERSION }}"
+          if [ ! -x "$TARGET_DIR/bin/gradle" ]; then
+            mkdir -p ".gradle-dist"
             curl -fsSL "https://services.gradle.org/distributions/${DISTZIP}" -o "/tmp/${DISTZIP}"
             unzip -q "/tmp/${DISTZIP}" -d ".gradle-dist"
             rm -f "/tmp/${DISTZIP}"
           fi
           ls -la "$TARGET_DIR/bin"
-      - name: Make local gradle executable
-        run: chmod +x ./.gradle-dist/gradle-${{ env.GRADLE_VERSION }}/bin/gradle
 
-      - name: Run Gradle (clean build remapJar jar)
-        # Use the extracted Gradle binary so we avoid the broken gradlew in the repo and ensure Gradle 8.10 is used
+      - name: Use downloaded Gradle to build (clean build remapJar jar)
         run: |
           set -eux
           GRADLE_BIN="./.gradle-dist/gradle-${{ env.GRADLE_VERSION }}/bin/gradle"
+          # show gradle version to confirm
           "$GRADLE_BIN" --version
-          # Force the important tasks so jars are produced
+          # force the important tasks so jars are produced
           "$GRADLE_BIN" clean build remapJar jar --no-daemon --info
         working-directory: ${{ github.workspace }}
 
       - name: Show build outputs
-        run: ls -la build || true && ls -la build/libs || true
+        run: |
+          echo "==== build tree ===="
+          ls -la build || true
+          echo "==== build/libs ===="
+          ls -la build/libs || true
 
       - name: Upload built jars (if any)
         uses: actions/upload-artifact@v4
         with:
-          name: AirCull-Mod
+          name: AirCull-Jars
           path: build/libs/*.jar
