@@ -1,10 +1,8 @@
 pluginManagement {
-    repositories {
-        maven("https://maven.fabricmc.net/") {
-            name = "Fabric"
-        }
-        gradlePluginPortal()
-        mavenCentral()
-    }
+  repositories {
+    maven("https://maven.fabricmc.net/")
+    gradlePluginPortal()
+    mavenCentral()
+  }
 }
 rootProject.name = "air-cull"
