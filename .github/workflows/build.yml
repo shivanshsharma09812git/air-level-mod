@@ -21,7 +21,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build
-        run: ./gradlew build --no-daemon
+        run: ./gradlew build --no-daemon | grep jar
 
 
       - name: Upload built jar
