@@ -1,54 +1,42 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/usr/bin/env sh
+##############################################################################
+## Gradle start up script for UN*X
+##############################################################################
 
-REQUIRED_JAVA_MAJOR=21
-GRADLE_VERSION=8.6
-
-java_major() {
-  if ! command -v java >/dev/null 2>&1; then
-    echo 0
-    return
-  fi
-  ver=$(java -version 2>&1 | head -n1)
-  maj=$(printf "%s" "$ver" | sed -n 's/.*"\?\([0-9][0-9]*\).*"/\1/p' | head -n1)
-  if [ -z "$maj" ]; then
-    echo 0
+# Attempt to set APP_HOME
+PRG="$0"
+while [ -h "$PRG" ] ; do
+  ls=`ls -ld "$PRG"`
+  link=`expr "$ls" : '.*-> \(.*\)$'`
+  if expr "$link" : '/.*' > /dev/null; then
+    PRG="$link"
   else
-    echo "$maj"
+    PRG=`dirname "$PRG"`"/$link"
   fi
+done
+SAVED="`pwd`"
+cd "`dirname "$PRG"`/" >/dev/null
+APP_HOME="`pwd -P`"
+cd "$SAVED" >/dev/null
+
+APP_NAME="Gradle"
+APP_BASE_NAME=`basename "$0"`
+
+# Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
+DEFAULT_JVM_OPTS=""
+
+CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
+
+JAVACMD="java"
+
+# Escape application args
+save () {
+    for i do printf %s\n "$i" | sed "s/'/'\\''/g;1s/^/'/;\$s/\$/' \\/" ; done
+    echo " "
 }
+APP_ARGS=$(save "$@")
 
-JAVA_MAJOR=$(java_major)
-if [ "$JAVA_MAJOR" -lt "$REQUIRED_JAVA_MAJOR" ]; then
-  echo "Java $REQUIRED_JAVA_MAJOR or newer is required. Detected Java major version: $JAVA_MAJOR"
-  exit 1
-fi
+# Collect all arguments for the java command
+eval set -- $DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$APP_ARGS"
 
-if command -v gradle >/dev/null 2>&1; then
-  exec gradle "$@"
-fi
-
-WRAPPER_DIR=".gradle-wrapper/gradle-$GRADLE_VERSION"
-BIN_PATH="$WRAPPER_DIR/bin/gradle"
-
-if [ ! -x "$BIN_PATH" ]; then
-  echo "No system gradle found. Bootstrapping Gradle $GRADLE_VERSION into $WRAPPER_DIR ..."
-  mkdir -p ".gradle-wrapper"
-  ZIPNAME="gradle-${GRADLE_VERSION}-bin.zip"
-  URL="https://services.gradle.org/distributions/${ZIPNAME}"
-  TMPZIP="$(mktemp)"
-  echo "Downloading $URL ..."
-  if command -v curl >/dev/null 2>&1; then
-    curl -L -o "$TMPZIP" "$URL"
-  elif command -v wget >/dev/null 2>&1; then
-    wget -O "$TMPZIP" "$URL"
-  else
-    echo "curl or wget is required to download Gradle distribution."
-    exit 1
-  fi
-  echo "Extracting to $WRAPPER_DIR ..."
-  unzip -q "$TMPZIP" -d ".gradle-wrapper"
-  rm -f "$TMPZIP"
-fi
-
-exec "$BIN_PATH" "$@"
+exec "$JAVACMD" "$@"
