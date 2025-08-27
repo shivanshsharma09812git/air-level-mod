@@ -1,6 +1,6 @@
 plugins {
-    id("fabric-loom") version "1.2.10"
-    id("java")
+    id("fabric-loom") version "1.7-SNAPSHOT"
+    id("maven-publish")
 }
 
 val minecraftVersion = "1.21.4"
