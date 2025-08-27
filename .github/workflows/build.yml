@@ -1,18 +1,18 @@
-name: Build Air Cull Mod
+name: Build AirCull Mod (Gradle 8.10 direct)
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
     branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      GRADLE_VERSION: 8.10
 
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Set up JDK 21
@@ -21,7 +21,7 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Cache Gradle
+      - name: Cache Gradle & dependencies
         uses: actions/cache@v4
         with:
           path: |
@@ -31,16 +31,35 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Make Gradlew executable
-        run: chmod +x ./gradlew
+      - name: Download Gradle ${GRADLE_VERSION}
+        run: |
+          set -eux
+          DISTZIP="gradle-${GRADLE_VERSION}-bin.zip"
+          TARGET_DIR=".gradle-dist/gradle-${GRADLE_VERSION}"
+          mkdir -p "$TARGET_DIR"
+          if [ ! -f "$TARGET_DIR/bin/gradle" ]; then
+            curl -fsSL "https://services.gradle.org/distributions/${DISTZIP}" -o "/tmp/${DISTZIP}"
+            unzip -q "/tmp/${DISTZIP}" -d ".gradle-dist"
+            rm -f "/tmp/${DISTZIP}"
+          fi
+          ls -la "$TARGET_DIR/bin"
+      - name: Make local gradle executable
+        run: chmod +x ./.gradle-dist/gradle-${{ env.GRADLE_VERSION }}/bin/gradle
 
-      - name: Run build (force remapJar + jar)
-        run: ./gradlew clean build remapJar jar --no-daemon --info
+      - name: Run Gradle (clean build remapJar jar)
+        # Use the extracted Gradle binary so we avoid the broken gradlew in the repo and ensure Gradle 8.10 is used
+        run: |
+          set -eux
+          GRADLE_BIN="./.gradle-dist/gradle-${{ env.GRADLE_VERSION }}/bin/gradle"
+          "$GRADLE_BIN" --version
+          # Force the important tasks so jars are produced
+          "$GRADLE_BIN" clean build remapJar jar --no-daemon --info
+        working-directory: ${{ github.workspace }}
 
-      - name: List build outputs
-        run: ls -R build/libs || true
+      - name: Show build outputs
+        run: ls -la build || true && ls -la build/libs || true
 
-      - name: Upload mod jar
+      - name: Upload built jars (if any)
         uses: actions/upload-artifact@v4
         with:
           name: AirCull-Mod
