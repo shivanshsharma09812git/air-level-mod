@@ -30,7 +30,7 @@ dependencies {
 
 loom {
     runs {
-        create("client") {
+        named("client") {
             client()
         }
     }
