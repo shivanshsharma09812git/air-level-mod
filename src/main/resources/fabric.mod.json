@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "aircul",
+  "version": "1.0.0",
+  "name": "AirCull",
+  "description": "Client-side culling: hides blocks that have no air within a configurable radius (liquids excluded).",
+  "authors": ["You"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.aircul.client.AirCullClient::onInitializeClient"]
+  },
+  "depends": {
+    "fabricloader": "*",
+    "fabric": "*"
+  }
+}
