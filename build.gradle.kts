@@ -1,9 +1,10 @@
 plugins {
     id("fabric-loom") version "1.7.4"
-    id("java")
+    java
+    `maven-publish`
 }
 
-group = "com.aircul" // change if you want
+group = "com.aircul"
 version = "1.0.0"
 
 java {
@@ -19,23 +20,27 @@ repositories {
 }
 
 dependencies {
-    // Minecraft + Yarn mappings for 1.21.4
     minecraft("com.mojang:minecraft:1.21.4")
     mappings("net.fabricmc:yarn:1.21.4+build.1:v2")
 
-    // Fabric Loader + API (latest as of now)
     modImplementation("net.fabricmc:fabric-loader:0.16.10")
-    modImplementation("net.fabricmc.fabric-api:fabric-api:0.111.0+1.21.4")
+    // If you need Fabric API, uncomment and ensure correct version:
+    // modImplementation("net.fabricmc.fabric-api:fabric-api:0.111.0+1.21.4")
 }
 
 tasks.jar {
     archiveBaseName.set("air-cull")
     archiveVersion.set(version.toString())
-    from("LICENSE") {
-        rename { "${it}_air_cull" }
-    }
+    from(sourceSets.main.get().output)
 }
 
-tasks.named("build") {
-    dependsOn("remapJar")
+tasks.matching { it.name == "remapJar" }.configureEach {
+    tasks.named("build") { dependsOn(this@configureEach) }
+}
+
+tasks.register("listArtifacts") {
+    doLast {
+        println("build/libs contents:")
+        file("build/libs")?.listFiles()?.forEach { println(" - ${it.name}") }
+    }
 }
