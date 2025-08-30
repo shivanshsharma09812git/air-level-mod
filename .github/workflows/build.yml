@@ -21,7 +21,7 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Cache Gradle & Gradle wrapper downloads
+      - name: Cache Gradle & wrappers
         uses: actions/cache@v4
         with:
           path: |
@@ -30,6 +30,12 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
+
+      - name: Remove old local Gradle dist (avoid stale 8.1)
+        run: |
+          set -eux
+          rm -rf ./.gradle-dist/gradle-* || true
+          ls -la ./.gradle-dist || true
 
       - name: Download Gradle ${{ env.GRADLE_VERSION }}
         run: |
@@ -42,16 +48,22 @@ jobs:
             unzip -q "/tmp/${DISTZIP}" -d ".gradle-dist"
             rm -f "/tmp/${DISTZIP}"
           fi
+          echo "Using Gradle at: $TARGET_DIR/bin/gradle"
           ls -la "$TARGET_DIR/bin"
 
-      - name: Use downloaded Gradle to build (clean build remapJar jar)
+      - name: Confirm Gradle version & environment
+        run: |
+          ./.gradle-dist/gradle-${{ env.GRADLE_VERSION }}/bin/gradle --version
+          echo "WORKDIR: $GITHUB_WORKSPACE"
+          echo "Listing .gradle-dist:"
+          ls -la ./.gradle-dist || true
+
+      - name: Build (clean build remapJar jar)
         run: |
           set -eux
           GRADLE_BIN="./.gradle-dist/gradle-${{ env.GRADLE_VERSION }}/bin/gradle"
-          # show gradle version to confirm
           "$GRADLE_BIN" --version
-          # force the important tasks so jars are produced
-          "$GRADLE_BIN" clean build remapJar jar --no-daemon --info
+          "$GRADLE_BIN" clean build remapJar jar --no-daemon --info --stacktrace
         working-directory: ${{ github.workspace }}
 
       - name: Show build outputs
