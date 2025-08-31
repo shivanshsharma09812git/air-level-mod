@@ -1,49 +1,22 @@
 plugins {
     id("fabric-loom") version "1.7.4"
     id("java")
+
 }
 
-group = "com.aircul"              // change if you want
-version = "1.0.0+mc1.21.4"
+group = "com.aircul" // change if you want
+version = "1.0.0"
 
 java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
-    }
-    withSourcesJar()
-}
-
-repositories {
-    maven("https://maven.fabricmc.net/")
-    mavenCentral()
+@@ -20,35 +19,23 @@ repositories {
 }
 
 dependencies {
-    // Target Minecraft 1.21.4
+    // Minecraft + Yarn mappings for 1.21.4
     minecraft("com.mojang:minecraft:1.21.4")
+    mappings("net.fabricmc:yarn:1.21.4+build.1:v2")
 
-    // Use official Mojang mappings so you don't have to chase Yarn build numbers
-    mappings(loom.officialMojangMappings())
-
-    // Fabric loader only (NO Fabric API)
+    // Fabric Loader + API (latest as of now)
     modImplementation("net.fabricmc:fabric-loader:0.16.10")
-}
-
-// name the output nicely
-tasks.jar {
-    archiveBaseName.set("air-cull")
-    archiveVersion.set(version.toString())
-}
-
-// ensure a remapped, game-ready jar is produced on build
-tasks.named("build") {
-    dependsOn("remapJar")
-}
-
-// If your fabric.mod.json contains ${version}, expand it (safe if the file exists)
-tasks.processResources {
-    val props = mapOf("version" to project.version)
-    filesMatching("fabric.mod.json") {
-        expand(props)
-    }
+    modImplementation("net.fabricmc.fabric-api:fabric-api:0.111.0+1.21.4")
 }
